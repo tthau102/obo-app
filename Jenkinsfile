@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Harbor registry
         HARBOR_REGISTRY = 'harbor.server.thweb.click'
-        HARBOR_PROJECT = 'tthau'
+        HARBOR_PROJECT = 'obo-app'
         IMAGE_NAME = 'obo-app'
         IMAGE_TAG = "${BUILD_NUMBER}"
         FULL_IMAGE_NAME = "${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG}"
