@@ -1,0 +1,163 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: obo-config
+  namespace: obo-ns
+data:
+  DB_HOST: "mysql-external"
+  DB_USERNAME: "obo"
+  DB_NAME: "obo"
+  DB_PORT: "3306"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-external
+  namespace: obo-ns
+spec:
+  ports:
+    - name: mysql
+      port: 3306
+      targetPort: 3306
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: mysql-external
+  namespace: obo-ns
+subsets:
+- addresses:
+  - ip: 10.25.0.109
+  ports:
+  - name: mysql
+    port: 3306
+    protocol: TCP
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: obo-db-secret
+  namespace: obo-ns
+type: Opaque
+stringData:
+  DB_PASSWORD: "obopasswd"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: obo-app
+  namespace: obo-ns
+  labels:
+    app: obo-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: obo-app
+  template:
+    metadata:
+      labels:
+        app: obo-app
+    spec:
+      imagePullSecrets:
+        - name: harbor-registry
+      containers:
+        - name: obo-app
+          image: harbor.server.thweb.click/harbor-obo/obo-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: obo-config
+                  key: DB_HOST
+            - name: DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: obo-config
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: obo-db-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: obo-config
+                  key: DB_NAME
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: obo-config
+                  key: DB_PORT
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1024Mi
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: obo-app-svc
+  namespace: obo-ns
+spec:
+  selector:
+    app: obo-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: obo-app-ingress
+  namespace: obo-ns
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - obo.app.thweb.click
+      secretName: obo-tls
+  rules:
+    - host: obo.app.thweb.click
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: obo-app-svc
+                port:
+                  number: 80
