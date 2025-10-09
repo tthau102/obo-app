@@ -43,7 +43,7 @@ pipeline {
             steps {
                 script {
                     echo "=== Pushing to Harbor registry ==="
-                    docker.withRegistry("https://${HARBOR_REGISTRY}", 'harbor-credentials') {
+                    docker.withRegistry("https://${HARBOR_REGISTRY}", ${HARBOR_CREDS}) {
                         app.push()
                         app.push('latest')  // Tag latest
                     }
