@@ -10,7 +10,7 @@ pipeline {
         FULL_IMAGE_NAME = "${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${IMAGE_NAME}:${IMAGE_TAG}"
         
         // Credentials
-        HARBOR_CREDS = credentials('harbor-credentials')
+        HARBOR_CREDS = credentials('jenkins-harbor-credentials')
         GITLAB_CREDS = 'jenkins-gitlab-credentials'
     }
     
@@ -69,14 +69,16 @@ pipeline {
     post {
         success {
             echo "✅ Pipeline completed successfully!"
-            echo "Image: ${FULL_IMAGE_NAME}"
+            echo "Image: ${env.FULL_IMAGE_NAME}"
         }
         failure {
             echo "❌ Pipeline failed. Check logs above."
         }
         always {
-            // Cleanup local images để tiết kiệm disk
-            sh "docker rmi ${FULL_IMAGE_NAME} || true"
+            script {
+                // Cleanup local images để tiết kiệm disk
+                sh "docker rmi ${env.FULL_IMAGE_NAME} || true"
+            }
         }
     }
 }
