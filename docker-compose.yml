@@ -1,4 +1,19 @@
 services:
+  obo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: obo-ob:latest
+    environment:
+      DB_HOST: db
+      DB_NAME: obo
+      DB_USERNAME: obo
+      DB_PASSWORD: obo_123
+      DB_PORT: 3306
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
   db:
     image: mysql:8.0
     container_name: obo-mysql

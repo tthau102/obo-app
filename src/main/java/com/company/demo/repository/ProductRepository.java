@@ -68,11 +68,26 @@ public interface ProductRepository extends JpaRepository<Product, String> {
             "ON product.id = product_category.product_id\n" +
             "INNER JOIN category\n" +
             "ON category.id = product_category.category_id\n" +
-            "WHERE product.id LIKE CONCAT('%',?1,'%') AND product.name LIKE CONCAT('%',?2,'%') AND category.id LIKE ?3 AND product.brand_id LIKE ?4 \n" +
-            "ORDER BY ?5 ?6 \n" +
-            "LIMIT ?7\n" +
-            "OFFSET ?8")
-    public List<Product> adminGetListProduct(String id, String name, String category, String brand, String order, String direction, int limit, int offset);
+            "WHERE product.id LIKE CONCAT('%',:id,'%') AND product.name LIKE CONCAT('%',:name,'%') AND category.id LIKE :category AND product.brand_id LIKE :brand \n" +
+            "ORDER BY \n" +
+            "CASE WHEN :orderBy = 'id' AND :direction = 'ASC' THEN product.id END ASC,\n" +
+            "CASE WHEN :orderBy = 'id' AND :direction = 'DESC' THEN product.id END DESC,\n" +
+            "CASE WHEN :orderBy = 'name' AND :direction = 'ASC' THEN product.name END ASC,\n" +
+            "CASE WHEN :orderBy = 'name' AND :direction = 'DESC' THEN product.name END DESC,\n" +
+            "CASE WHEN :orderBy = 'price' AND :direction = 'ASC' THEN product.price END ASC,\n" +
+            "CASE WHEN :orderBy = 'price' AND :direction = 'DESC' THEN product.price END DESC,\n" +
+            "CASE WHEN :orderBy = 'created_at' AND :direction = 'ASC' THEN product.created_at END ASC,\n" +
+            "CASE WHEN :orderBy = 'created_at' AND :direction = 'DESC' THEN product.created_at END DESC \n" +
+            "LIMIT :limit\n" +
+            "OFFSET :offset")
+    public List<Product> adminGetListProduct(@Param("id") String id,
+                                             @Param("name") String name,
+                                             @Param("category") String category,
+                                             @Param("brand") String brand,
+                                             @Param("orderBy") String orderBy,
+                                             @Param("direction") String direction,
+                                             @Param("limit") int limit,
+                                             @Param("offset") int offset);
 
     @Query(nativeQuery = true, value = "SELECT count(distinct product.id)\n" +
             "FROM product\n" +

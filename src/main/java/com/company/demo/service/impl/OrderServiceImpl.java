@@ -293,11 +293,17 @@ public class OrderServiceImpl implements OrderService {
                 order.setReceiverName(req.getReceiverName());
                 order.setReceiverAddress(req.getReceiverAddress());
             } else if (req.getStatus() == DELIVERY_STATUS) {
-                // TODO: Minus 1 product
-                productSizeRepository.minusOneProductBySize(order.getProduct().getId(), order.getSize());
+                // TODO: Minus 1 product - check if update was successful
+                int updated = productSizeRepository.minusOneProductBySize(order.getProduct().getId(), order.getSize());
+                if (updated == 0) {
+                    throw new BadRequestException("Sản phẩm đã hết hàng, không thể cập nhật trạng thái");
+                }
             } else if (req.getStatus() == COMPLETE_STATUS) {
-                // TODO: Minus 1 product, Plus money
-                productSizeRepository.minusOneProductBySize(order.getProduct().getId(), order.getSize());
+                // TODO: Minus 1 product, Plus money - check if update was successful
+                int updated = productSizeRepository.minusOneProductBySize(order.getProduct().getId(), order.getSize());
+                if (updated == 0) {
+                    throw new BadRequestException("Sản phẩm đã hết hàng, không thể cập nhật trạng thái");
+                }
                 updateRevenue(modifiedBy, order.getTotalPrice(), order);
             } else if (req.getStatus() != CANCELED_STATUS) {
                 throw new BadRequestException("Không thể chuyển đơn hàng sang trạng thái này");

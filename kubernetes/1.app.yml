@@ -99,19 +99,32 @@ spec:
             - name: SPRING_DEVTOOLS_RESTART_ENABLED
               value: "false"
 
-          # Dùng TCP probe để tránh 404 nếu "/" không tồn tại
-          # readinessProbe:
-          #   tcpSocket: { port: 8080 }
-          #   initialDelaySeconds: 10
-          #   periodSeconds: 10
-          # livenessProbe:
-          #   tcpSocket: { port: 8080 }
-          #   initialDelaySeconds: 30
-          #   periodSeconds: 20
+          # Health checks using Spring Boot Actuator
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
-          # resources:
-          #   requests: { cpu: 100m, memory: 256Mi }
-          #   limits:   { cpu: 500m, memory: 512Mi }
+          # Resource limits and requests
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
 
 ---
 apiVersion: v1

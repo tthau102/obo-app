@@ -56,10 +56,13 @@ public class UserController {
         UserDetails principal = new CustomUserDetails(result);
         String token = jwtTokenUtil.generateToken(principal);
 
-        // Add token to cookie to login
+        // Add token to cookie to login with security flags
         Cookie cookie = new Cookie("JWT_TOKEN",token);
         cookie.setMaxAge(MAX_AGE_COOKIE);
         cookie.setPath("/");
+        cookie.setHttpOnly(true); // Prevent XSS attacks
+        cookie.setSecure(false); // Set to true in production with HTTPS
+        // cookie.setAttribute("SameSite", "Strict"); // Uncomment for Spring Boot 2.6+
         response.addCookie(cookie);
 
         return ResponseEntity.ok(UserMapper.toUserDto(result));
@@ -79,10 +82,13 @@ public class UserController {
             // Gen token
             String token = jwtTokenUtil.generateToken((CustomUserDetails) authentication.getPrincipal());
 
-            // Add token to cookie to login
+            // Add token to cookie to login with security flags
             Cookie cookie = new Cookie("JWT_TOKEN", token);
             cookie.setMaxAge(MAX_AGE_COOKIE);
             cookie.setPath("/");
+            cookie.setHttpOnly(true); // Prevent XSS attacks
+            cookie.setSecure(false); // Set to true in production with HTTPS
+            // cookie.setAttribute("SameSite", "Strict"); // Uncomment for Spring Boot 2.6+
             response.addCookie(cookie);
 
             return ResponseEntity.ok(UserMapper.toUserDto(((CustomUserDetails) authentication.getPrincipal()).getUser()));

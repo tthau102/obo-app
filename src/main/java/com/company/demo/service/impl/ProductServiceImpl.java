@@ -166,12 +166,42 @@ public class ProductServiceImpl implements ProductService {
         int limit = 15;
         PageUtil pageInfo  = new PageUtil(limit, page);
 
-        List<Product> products = productRepository.adminGetListProduct(id, name, category, brand, order, direction, limit , pageInfo.calculateOffset());
+        // Validate and sanitize order and direction parameters to prevent SQL injection
+        String validOrderBy = validateOrderBy(order);
+        String validDirection = validateDirection(direction);
+
+        List<Product> products = productRepository.adminGetListProduct(id, name, category, brand, validOrderBy, validDirection, limit , pageInfo.calculateOffset());
         int totalItems = productRepository.countAdminGetListProduct(id, name, category, brand);
 
         int totalPages = pageInfo.calculateTotalPage(totalItems);
 
         return new PageableDto(products, totalPages, pageInfo.getPage());
+    }
+
+    // Validate orderBy parameter - only allow specific column names
+    private String validateOrderBy(String orderBy) {
+        if (orderBy == null || orderBy.isEmpty()) {
+            return "created_at";
+        }
+        switch (orderBy.toLowerCase()) {
+            case "id":
+            case "name":
+            case "price":
+            case "created_at":
+                return orderBy.toLowerCase();
+            default:
+                return "created_at";
+        }
+    }
+
+    // Validate direction parameter - only allow ASC or DESC
+    private String validateDirection(String direction) {
+        if (direction == null || direction.isEmpty()) {
+            return "DESC";
+        }
+        return "DESC".equalsIgnoreCase(direction) || "ASC".equalsIgnoreCase(direction)
+            ? direction.toUpperCase()
+            : "DESC";
     }
 
     @Override

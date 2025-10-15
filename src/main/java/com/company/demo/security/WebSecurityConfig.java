@@ -28,6 +28,9 @@ public class WebSecurityConfig<CustomUserDetailService> extends WebSecurityConfi
     @Autowired
     private JwtUserDetailsService jwtUserDetailsService;
 
+    @Autowired
+    private RateLimitingFilter rateLimitingFilter;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -47,26 +50,49 @@ public class WebSecurityConfig<CustomUserDetailService> extends WebSecurityConfi
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                // CORS configuration
                 .cors()
                 .and()
+                // CSRF enabled for better security - exempt API endpoints that use JWT
                 .csrf()
-                .disable()
+                .ignoringAntMatchers("/api/login", "/api/register", "/api/**")
+                .and()
+                // Add security headers
+                .headers()
+                .contentSecurityPolicy("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';")
+                .and()
+                .xssProtection()
+                .and()
+                .contentTypeOptions()
+                .and()
+                .frameOptions().deny()
+                .and()
+                // Authorization
                 .authorizeRequests()
+                .antMatchers("/actuator/health", "/actuator/info").permitAll()
+                .antMatchers("/actuator/**").hasRole("ADMIN")
                 .antMatchers("/api/order", "/tai-khoan", "/tai-khoan/**", "/api/change-password", "/api/update-profile").authenticated()
                 .antMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                 .anyRequest().permitAll()
                 .and()
+                // Logout configuration
                 .logout()
                 .logoutUrl("/api/logout")
                 .logoutSuccessUrl("/")
                 .deleteCookies("JWT_TOKEN")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
                 .and()
+                // Exception handling
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and()
+                // Session management - stateless for JWT
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                // Add security filters
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
