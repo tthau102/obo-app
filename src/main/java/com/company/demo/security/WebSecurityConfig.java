@@ -1,6 +1,6 @@
 package com.company.demo.security;
 
-import com.company.demo.security.filter.JwtRequestFilter;
+import com.company.demo.security.jwt.JwtRequestFilter;
 import com.company.demo.security.filter.RateLimitingFilter;
 import com.company.demo.security.jwt.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -2,6 +2,7 @@ package com.company.demo.security.jwt;
 
 import com.company.demo.entity.User;
 import com.company.demo.repository.UserRepository;
+import com.company.demo.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
