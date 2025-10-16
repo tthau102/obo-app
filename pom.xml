@@ -80,6 +80,12 @@
 			<artifactId>springdoc-openapi-ui</artifactId>
 			<version>1.7.0</version>
 		</dependency>
+		<!-- Swagger 2 annotations for backward compatibility -->
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-annotations</artifactId>
+			<version>1.6.14</version>
+		</dependency>
 		<!-- Spring Boot Actuator for health checks and metrics -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
