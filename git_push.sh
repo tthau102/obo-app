@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Default branch là branch hiện tại
 branch=$(git rev-parse --abbrev-ref HEAD)
@@ -8,8 +9,21 @@ if [ -n "$1" ]; then
     current_branch=$(git rev-parse --abbrev-ref HEAD)
     if [ "$current_branch" != "$branch" ]; then
         echo "Switching to branch: $branch"
-        git checkout $branch || { echo "Failed to checkout $branch"; exit 1; }
+        git checkout "$branch" || { echo "Failed to checkout $branch"; exit 1; }
     fi
+fi
+
+# Check có thay đổi không
+if ! git diff --cached --quiet; then
+    : # Có staged changes, tiếp tục
+elif ! git diff --quiet; then
+    echo "You have unstaged changes. Stage them with: git add <files>"
+    echo ""
+    git status --short
+    exit 1
+else
+    echo "No changes to commit"
+    exit 0
 fi
 
 # Lấy thông tin Git
@@ -25,16 +39,18 @@ else
     files_text="No files"
 fi
 
-# Kiểm tra AWS credentials
+# Kiểm tra AWS credentials và jq
 use_ai=false
-if aws sts get-caller-identity &>/dev/null; then
-    use_ai=true
+if command -v aws &>/dev/null && command -v jq &>/dev/null; then
+    if aws sts get-caller-identity &>/dev/null; then
+        use_ai=true
+    fi
 fi
 
 # Tạo commit message
 if [ "$use_ai" = true ]; then
-    # Lấy diff content
-    diff_content=$(git diff --cached | head -c 10000)
+    # Lấy diff content (giới hạn 15KB để tránh quá lớn)
+    diff_content=$(git diff --cached | head -c 15000)
     
     prompt=$(cat <<EOF
 Trả về chính xác một dòng commit message dựa trên các thay đổi sau đây. Không thêm bất kỳ giải thích hay nội dung phụ nào:
@@ -102,25 +118,33 @@ fi
 
 # Hiển thị thông tin confirm
 echo ""
+echo "════════════════════════════════════════"
 echo "Remote: $remote"
 echo "Branch: $branch"
-echo "Commit message: $commit_message"
-echo "Files changed: $files_text"
+echo "Commit: $commit_message"
+echo "Files: $files_text"
+echo "════════════════════════════════════════"
 echo ""
-read -p "Proceed? (y/n): " confirm
+echo "Files to be committed:"
+git diff --cached --name-status
+echo ""
+read -p "Proceed with commit & push? (y/n): " confirm
 
 # Xử lý confirm
 if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+    echo "Cancelled"
     exit 0
 fi
 
-# Thực hiện commit và push
-git add .
+# Thực hiện commit (KHÔNG git add . - chỉ commit staged files)
 git commit -m "$commit_message"
 
-if git push -u origin $branch --force-with-lease; then
-    echo "Changes pushed to $branch branch"
+# Push với force-with-lease (an toàn hơn --force)
+if git push -u origin "$branch" --force-with-lease; then
+    echo ""
+    echo "✅ Successfully pushed to $branch"
 else
-    echo "Push failed"
+    echo ""
+    echo "❌ Push failed"
     exit 1
 fi
