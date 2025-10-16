@@ -49,11 +49,18 @@ pipeline {
         }
 
         stage('Maven Build') {
+            agent {
+                docker {
+                    image 'maven:3.9.6-eclipse-temurin-11'
+                    args '-v $HOME/.m2:/root/.m2'
+                    reuseNode true
+                }
+            }
             steps {
                 script {
                     echo "=== Building application with Maven ==="
                     sh '''
-                        ./mvnw clean package -DskipTests
+                        mvn clean package -DskipTests
                         echo "Build artifact: target/obo-stadium-0.0.1-SNAPSHOT.jar"
                     '''
                 }
@@ -61,10 +68,17 @@ pipeline {
         }
 
         stage('Run Tests') {
+            agent {
+                docker {
+                    image 'maven:3.9.6-eclipse-temurin-11'
+                    args '-v $HOME/.m2:/root/.m2'
+                    reuseNode true
+                }
+            }
             steps {
                 script {
                     echo "=== Running unit and integration tests ==="
-                    sh './mvnw test'
+                    sh 'mvn test'
                 }
             }
             post {
