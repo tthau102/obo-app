@@ -7,6 +7,7 @@ import com.company.demo.model.request.CreateProductReq;
 import com.company.demo.repository.OrderRepository;
 import com.company.demo.repository.ProductRepository;
 import com.company.demo.repository.ProductSizeRepository;
+import com.company.demo.service.PromotionService;
 import com.company.demo.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
