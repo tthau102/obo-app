@@ -1,4 +1,4 @@
-package com.company.demo.controller.anonymous;
+package com.company.demo.controller.web;
 
 import com.company.demo.entity.User;
 import com.company.demo.exception.BadRequestException;
@@ -10,7 +10,7 @@ import com.company.demo.model.request.CreateUserReq;
 import com.company.demo.model.request.LoginReq;
 import com.company.demo.model.request.UpdateProfileReq;
 import com.company.demo.security.CustomUserDetails;
-import com.company.demo.security.JwtTokenUtil;
+import com.company.demo.security.jwt.JwtTokenUtil;
 import com.company.demo.service.OrderService;
 import com.company.demo.service.UserService;
 import lombok.Getter;

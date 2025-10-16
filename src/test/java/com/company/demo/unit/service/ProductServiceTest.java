@@ -1,4 +1,4 @@
-package com.company.demo.service;
+package com.company.demo.unit.service;
 
 import com.company.demo.entity.Product;
 import com.company.demo.exception.BadRequestException;
@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class ProductServiceImplTest {
+class ProductServiceTest {
 
     @Mock
     private ProductRepository productRepository;

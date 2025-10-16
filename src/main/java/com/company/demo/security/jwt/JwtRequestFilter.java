@@ -1,4 +1,4 @@
-package com.company.demo.security;
+package com.company.demo.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;

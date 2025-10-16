@@ -1,4 +1,4 @@
-package com.company.demo.controller.anonymous;
+package com.company.demo.controller.web;
 
 import com.company.demo.entity.*;
 import com.company.demo.exception.NotFoundException;

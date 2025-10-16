@@ -1,4 +1,4 @@
-package com.company.demo.security;
+package com.company.demo.security.filter;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;

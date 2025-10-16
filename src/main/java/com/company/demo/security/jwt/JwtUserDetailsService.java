@@ -1,4 +1,4 @@
-package com.company.demo.security;
+package com.company.demo.security.jwt;
 
 import com.company.demo.entity.User;
 import com.company.demo.repository.UserRepository;
