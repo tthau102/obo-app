@@ -1,0 +1,26 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: obo-config
+  namespace: obo-ns
+  labels:
+    app: obo-app
+data:
+  # Application Configuration
+  APP_PORT: "8080"
+  SPRING_PROFILES_ACTIVE: "prod"
+
+  # Database Configuration (External MySQL)
+  # Update DB_HOST to your external MySQL IP address
+  DB_HOST: "10.25.0.X"  # Replace with actual MySQL IP
+  DB_PORT: "3306"
+  DB_NAME: "obo"
+  DB_USERNAME: "obo_user"
+
+  # JWT Configuration
+  JWT_DURATION: "3600"  # 1 hour for production
+
+  # Logging
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_COM_COMPANY_DEMO: "INFO"
